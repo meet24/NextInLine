@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { View, TextInput, Button, Text, StyleSheet } from "react-native";
-import { registerUser, loginUser } from "../../src/api";
+import { registerUser, loginUser } from "../src/api"; // adjust if needed
 
 interface FormState {
   name: string;
@@ -8,7 +8,7 @@ interface FormState {
   password: string;
 }
 
-export default function App() {
+export default function Index() {
   const [isLogin, setIsLogin] = useState<boolean>(true);
   const [form, setForm] = useState<FormState>({
     name: "",
