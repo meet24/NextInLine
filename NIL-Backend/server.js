@@ -4,13 +4,20 @@ require("./config/passport");
 
 const express = require("express");
 const dotenv = require("dotenv");
+const cors = require('cors');
+const app = express();
+
+// Allow requests from localhost:8081
+app.use(cors({
+  origin: 'http://localhost:8081',
+  credentials: true  // If you need to send cookies or headers
+}));
 
 dotenv.config();
 
 const connectDB = require("./config/db");
 connectDB();
 
-const app = express();
 app.use(express.json());
 
 app.use("/api/users", require("./routes/userRoute"));
