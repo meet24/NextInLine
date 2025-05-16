@@ -19,11 +19,9 @@ const userSchema = new mongoose.Schema(
     contactNumber: {
       type: String,
       unique: true,
-      default: "", // will be added after registration
     },
     address: {
       type: String,
-      default: "", // will be added after registration
     },
   },
   { timestamps: true }
