@@ -13,32 +13,21 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { registerUser, loginUser } from "../src/api";
 import { authStyles as styles } from "../styles/authStyles";
-import {
-  EXPO_PUBLIC_GOOGLE_ANDROID_ID,
-  EXPO_PUBLIC_GOOGLE_CLIENT_ID,
-  EXPO_PUBLIC_GOOGLE_IOS_ID,
-} from "@env";
-
-WebBrowser.maybeCompleteAuthSession();
 
 interface FormState {
   name: string;
   email: string;
   password: string;
+  contactNumber: string;
 }
 
 export default function Index() {
-  const [request, response, promptAsync] = Google.useAuthRequest({
-    webClientId: EXPO_PUBLIC_GOOGLE_CLIENT_ID,
-    androidClientId: EXPO_PUBLIC_GOOGLE_ANDROID_ID,
-    iosClientId: EXPO_PUBLIC_GOOGLE_IOS_ID,
-  });
-
   const [isLogin, setIsLogin] = useState(true);
   const [form, setForm] = useState<FormState>({
     name: "",
     email: "",
     password: "",
+    contactNumber: "",
   });
   const [message, setMessage] = useState("");
 
@@ -46,39 +35,12 @@ export default function Index() {
     setForm((prevForm) => ({ ...prevForm, [key]: value }));
   };
 
-  React.useEffect(() => {
-    const authenticateWithBackend = async () => {
-      if (response?.type === "success") {
-        const id_token = response.authentication?.idToken;
-
-        try {
-          const res = await axios.post(
-            "http://localhost:3001/api/auth/google/token",
-            {
-              id_token,
-            }
-          );
-
-          console.log("Logged in:", res.data);
-          setMessage(`Welcome Back, ${res.data.name}!`);
-        } catch (err: unknown) {
-          if (axios.isAxiosError(err) && err.response) {
-            console.error("Backend login failed:", err.response.data);
-          } else {
-            console.error("An unexpected error occurred:", err);
-          }
-        }
-      }
-    };
-
-    authenticateWithBackend();
-  }, [response]);
-
   const handleSubmit = async () => {
     try {
       const res = isLogin
         ? await loginUser({ email: form.email, password: form.password })
         : await registerUser(form);
+      setMessage("Sucessfuly");
     } catch (err: any) {
       setMessage(err?.response?.data?.msg || "Error occurred");
     }
@@ -152,6 +114,23 @@ export default function Index() {
         />
       </View>
 
+      {!isLogin && (
+        <View style={styles.inputContainer}>
+          <Ionicons
+            name="person-outline"
+            size={20}
+            color="#ccc"
+            style={styles.icon}
+          />
+          <TextInput
+            placeholder="Contact Number"
+            placeholderTextColor="#aaa"
+            style={styles.input}
+            onChangeText={(text) => handleChange("contactNumber", text)}
+          />
+        </View>
+      )}
+
       <TouchableOpacity style={styles.button} onPress={handleSubmit}>
         <Text style={styles.buttonText}>
           {isLogin ? "Sign in now" : "Register now"}
@@ -164,13 +143,7 @@ export default function Index() {
         </Text>
       </TouchableOpacity>
 
-      {/* {isLogin && <Text style={styles.message}>{message}</Text>} */}
-      {message !== "" && <Text style={styles.message}>{message}</Text>}
-
-      <TouchableOpacity
-        style={styles.googleButton}
-        onPress={() => promptAsync()}
-      >
+      <TouchableOpacity style={styles.googleButton} onPress={() => {}}>
         <Ionicons
           name="logo-google"
           size={20}
