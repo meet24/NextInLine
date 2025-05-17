@@ -13,6 +13,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { registerUser, loginUser } from "../src/api";
 import { authStyles as styles } from "../styles/authStyles";
+import { AsYouType, parsePhoneNumberFromString } from "libphonenumber-js";
 
 interface FormState {
   name: string;
@@ -29,14 +30,44 @@ export default function Index() {
     password: "",
     contactNumber: "",
   });
+  const [isPhoneValid, setIsPhoneValid] = useState(true);
   const [message, setMessage] = useState("");
 
   const handleChange = (key: keyof FormState, value: string) => {
     setForm((prevForm) => ({ ...prevForm, [key]: value }));
   };
 
+  const handlePhoneChange = (text: string) => {
+    const formatted = new AsYouType().input(text);
+    setForm((prev) => ({ ...prev, contactNumber: formatted }));
+
+    const cleaned = formatted.replace(/\s/g, ""); // remove spaces
+    const phone = parsePhoneNumberFromString(cleaned);
+
+    if (phone && phone.isValid()) {
+      const national = phone.nationalNumber;
+      const isTenDigit = /^\d{10}$/.test(national);
+
+      if (isTenDigit) {
+        setIsPhoneValid(true);
+      } else {
+        setIsPhoneValid(false);
+      }
+    } else {
+      setIsPhoneValid(false);
+    }
+  };
+
   const handleSubmit = async () => {
     try {
+      if (!isLogin) {
+        const phone = parsePhoneNumberFromString(form.contactNumber);
+        if (!phone || !phone.isValid() || phone.nationalNumber.length !== 10) {
+          setMessage("Invalid phone number format.");
+          return;
+        }
+      }
+
       const res = isLogin
         ? await loginUser({ email: form.email, password: form.password })
         : await registerUser(form);
@@ -51,7 +82,7 @@ export default function Index() {
       <StatusBar hidden />
 
       <Image
-        source={require("../assets/images/logo.png")}
+        source={require("../assets/images/logo2.png")}
         style={{
           width: 100,
           height: 100,
@@ -62,7 +93,7 @@ export default function Index() {
       />
       <Text style={styles.title}>Welcome!</Text>
       <Text style={styles.subtitle}>{isLogin ? "Sign in" : "Register"}</Text>
-      <Text style={styles.caption}>Please fill your informations</Text>
+      <Text style={styles.caption}>Please fill your information</Text>
 
       {!isLogin && (
         <View style={styles.inputContainer}>
@@ -114,21 +145,26 @@ export default function Index() {
         />
       </View>
 
-      {!isLogin && (
-        <View style={styles.inputContainer}>
-          <Ionicons
-            name="person-outline"
-            size={20}
-            color="#ccc"
-            style={styles.icon}
-          />
-          <TextInput
-            placeholder="Contact Number"
-            placeholderTextColor="#aaa"
-            style={styles.input}
-            onChangeText={(text) => handleChange("contactNumber", text)}
-          />
-        </View>
+      <View style={styles.inputContainer}>
+        <Ionicons
+          name="call-outline"
+          size={20}
+          color={isPhoneValid ? "#ccc" : "red"}
+          style={styles.icon}
+        />
+        <TextInput
+          placeholder="+1234567890"
+          placeholderTextColor="#aaa"
+          style={styles.input}
+          keyboardType="phone-pad"
+          value={form.contactNumber}
+          onChangeText={handlePhoneChange}
+        />
+      </View>
+      {!isPhoneValid && (
+        <Text style={{ color: "red", marginTop: 5, marginLeft: 10 }}>
+          Enter a valid number with exactly 10 digits after country code.
+        </Text>
       )}
 
       <TouchableOpacity style={styles.button} onPress={handleSubmit}>
