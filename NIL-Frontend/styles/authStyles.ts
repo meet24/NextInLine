@@ -1,22 +1,26 @@
-import { StyleSheet } from "react-native";
+import { Dimensions, StyleSheet } from "react-native";
+const { height } = Dimensions.get("window");
 
 export const authStyles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#293443",
-    paddingHorizontal: 30,
-    justifyContent: "center",
+    paddingHorizontal: 20,
+    paddingTop: 40,
+    paddingBottom: 40,
+    justifyContent: "space-between",
   },
   logo: {
     textAlign: "center",
     fontSize: 20,
     fontWeight: "bold",
     color: "#00ff88",
-    marginBottom: 10,
+    marginBottom: 0,
+    marginTop: 10,
   },
   title: {
     textAlign: "center",
-    marginTop: 30,
+    marginTop: 10,
     fontSize: 16,
     color: "#fff",
   },
@@ -64,7 +68,7 @@ export const authStyles = StyleSheet.create({
   link: {
     color: "#fff",
     textAlign: "center",
-    marginTop: 50,
+    marginTop: 20,
     textDecorationLine: "underline",
   },
   message: {
@@ -81,10 +85,37 @@ export const authStyles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginTop: 20,
+    marginBottom:10,
   },
   googleButtonText: {
     color: "#000",
     fontWeight: "bold",
     fontSize: 16,
   },
+  errorText: {
+  color: "brown",
+  fontSize: 12,
+  marginTop: 4,
+  marginLeft: 10,
+},
+screenContainer: {
+    flex: 1,
+    backgroundColor: "#293443",
+    paddingHorizontal: 20,
+  },
+  logoWrapper: {
+    alignItems: "center",
+    marginTop: 40,
+    marginBottom: 20,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    justifyContent: "center",
+    paddingBottom: 20,
+  },
+  footerWrapper: {
+    marginBottom: 20,
+    alignItems: "center",
+  },
+
 });
