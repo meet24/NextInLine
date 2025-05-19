@@ -26,7 +26,6 @@ import Header from "./Header";
 import ToggleAuthLink from "./ToggleAuthLink";
 import GoogleSignInButton from "./GoogleSignInButton";
 import MessageBox from "./MessageBox";
-import { API_BASE_URL } from "../src/constants";
 
 const AuthForm: React.FC = () => {
   const router = useRouter();
@@ -222,7 +221,7 @@ const AuthForm: React.FC = () => {
                         try {
                           setLoading(true);
                           await axios.post(
-                            `${API_BASE_URL}/api/verify/send-otp`,
+                            `${process.env.EXPO_PUBLIC_FRONTEND_URL}:3001/api/verify/send-otp`,
                             { email: values.email }
                           );
 

@@ -10,7 +10,6 @@ import {
 import { useLocalSearchParams, useRouter } from "expo-router";
 import axios from "axios";
 import { registerUser } from "../src/api";
-import { API_BASE_URL } from "../src/constants";
 
 type initialValues = {
   name: "";
@@ -44,10 +43,6 @@ export default function OTPVerificationScreen() {
     }
 
     try {
-      await axios.post(`${API_BASE_URL}/api/verify/send-otp`, {
-        email: user.email,
-        otp: code,
-      });
       await registerUser(user);
       router.replace("/home" as any); // go back to login or home
     } catch (err) {
