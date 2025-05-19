@@ -3,8 +3,6 @@ import {
   View,
   Text,
   TouchableOpacity,
-  Alert,
-  ActivityIndicator,
   ScrollView,
   KeyboardAvoidingView,
   Platform,
@@ -16,7 +14,7 @@ import {
   loginValidationSchema,
   signupValidationSchema,
 } from "../utils/validation";
-import { registerUser, loginUser } from "../src/api";
+import { loginUser } from "../src/api";
 import { authStyles as styles } from "../styles/authStyles";
 import { AsYouType } from "libphonenumber-js";
 import axios from "axios";
@@ -70,8 +68,7 @@ const AuthForm: React.FC = () => {
         email: values.email,
         password: values.password,
       });
-
-      setMessage("Successfully submitted!");
+      router.replace("/home" as any);
     } catch (err: any) {
       setMessage(err?.response?.data?.msg || "Error occurred");
     }

@@ -49,7 +49,7 @@ export default function OTPVerificationScreen() {
         otp: code,
       });
       await registerUser(user);
-      router.replace("/"); // go back to login or home
+      router.replace("/home" as any); // go back to login or home
     } catch (err) {
       console.log(err);
     }
