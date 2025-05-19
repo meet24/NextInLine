@@ -35,6 +35,8 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 app.use("/api/auth", require("./routes/authRoute"));
+app.use("/api", require("./routes/userRoute"));
+
 
 
 // OTP email verification
