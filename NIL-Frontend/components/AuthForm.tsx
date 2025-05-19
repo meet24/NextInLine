@@ -5,6 +5,11 @@ import {
   TouchableOpacity,
   Alert,
   ActivityIndicator,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+  Keyboard,
+  TouchableWithoutFeedback,
 } from "react-native";
 import { Formik } from "formik";
 import {
@@ -15,6 +20,7 @@ import { registerUser, loginUser } from "../src/api";
 import { authStyles as styles } from "../styles/authStyles";
 import { AsYouType } from "libphonenumber-js";
 import axios from "axios";
+import { useRouter } from "expo-router";
 
 import InputField from "./InputField";
 import PhoneInputField from "./PhoneInputField";
@@ -22,14 +28,13 @@ import Header from "./Header";
 import ToggleAuthLink from "./ToggleAuthLink";
 import GoogleSignInButton from "./GoogleSignInButton";
 import MessageBox from "./MessageBox";
+import { API_BASE_URL } from "../src/constants";
 
-export default function AuthForm() {
+const AuthForm: React.FC = () => {
+  const router = useRouter();
+
   const [isLogin, setIsLogin] = useState(true);
   const [message, setMessage] = useState("");
-  const [emailVerified, setEmailVerified] = useState(false);
-  const [otpSent, setOtpSent] = useState(false);
-  const [otp, setOtp] = useState("");
-  const [otpError, setOtpError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const initialValues = {
@@ -56,17 +61,15 @@ export default function AuthForm() {
 
   const handleFormSubmit = async (values: typeof initialValues) => {
     try {
-      if (!isLogin && !emailVerified) {
-        Alert.alert("Please verify your email before registering.");
+      if (!isLogin) {
+        setMessage("Please verify your email before registering.");
         return;
       }
 
-      const res = isLogin
-        ? await loginUser({
-            email: values.email,
-            password: values.password,
-          })
-        : await registerUser(values);
+      await loginUser({
+        email: values.email,
+        password: values.password,
+      });
 
       setMessage("Successfully submitted!");
     } catch (err: any) {
@@ -75,240 +78,205 @@ export default function AuthForm() {
   };
 
   return (
-    <Formik
-      initialValues={initialValues}
-      validationSchema={
-        isLogin ? loginValidationSchema : signupValidationSchema
-      }
-      onSubmit={handleFormSubmit}
-      validateOnChange={true}
-      validateOnBlur={true}
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      style={{ flex: 1 }}
     >
-      {({
-        handleChange,
-        handleSubmit,
-        values,
-        errors,
-        touched,
-        setFieldTouched,
-      }) => (
-        <>
-          <Header isLogin={isLogin} />
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <ScrollView
+          contentContainerStyle={{
+            flexGrow: 1,
+            justifyContent: "center",
+            paddingHorizontal: 20,
+            paddingVertical: 40,
+          }}
+          keyboardShouldPersistTaps="handled"
+        >
+          <Formik
+            initialValues={initialValues}
+            validationSchema={
+              isLogin ? loginValidationSchema : signupValidationSchema
+            }
+            onSubmit={handleFormSubmit}
+            validateOnChange={true}
+            validateOnBlur={true}
+          >
+            {({
+              handleChange,
+              handleSubmit,
+              values,
+              errors,
+              touched,
+              setFieldTouched,
+            }) => (
+              <>
+                <Header isLogin={isLogin} />
 
-          {!isLogin && (
-            <>
-              <InputField
-                icon="person-outline"
-                placeholder="Name"
-                value={values.name}
-                onChangeText={handleChange("name")}
-              />
-              {touched.name && errors.name && (
-                <Text style={styles.errorText}>{errors.name}</Text>
-              )}
-            </>
-          )}
+                {!isLogin && (
+                  <>
+                    <InputField
+                      icon="person-outline"
+                      placeholder="Name"
+                      value={values.name}
+                      onChangeText={handleChange("name")}
+                    />
+                    {touched.name && errors.name && (
+                      <Text style={styles.errorText}>{errors.name}</Text>
+                    )}
+                  </>
+                )}
 
-          <InputField
-            icon="mail-outline"
-            placeholder="Email"
-            keyboardType="email-address"
-            value={values.email}
-            onChangeText={(text) => {
-              handleChange("email")(text);
-              setFieldTouched("email", true, false);
-              setOtpSent(false);
-              setEmailVerified(false);
-              setOtp("");
-              setOtpError("");
-            }}
-          />
-          {touched.email && (
-            <Text style={styles.errorText}>
-              {values.email === "" ? "Email is required" : errors.email || ""}
-            </Text>
-          )}
-
-          <InputField
-            icon="lock-closed-outline"
-            placeholder="Password"
-            secureTextEntry
-            isPassword
-            value={values.password}
-            onChangeText={(text) => {
-              handleChange("password")(text);
-              setFieldTouched("password", true, false);
-            }}
-          />
-          {touched.password && (
-            <Text style={styles.errorText}>
-              {values.password === ""
-                ? "Password is required"
-                : errors.password || ""}
-            </Text>
-          )}
-
-          {!isLogin && values.password !== "" && (
-            <View style={{ marginBottom: 10 }}>
-              <View
-                style={{
-                  height: 5,
-                  width: "100%",
-                  backgroundColor: "#ddd",
-                  borderRadius: 5,
-                  overflow: "hidden",
-                }}
-              >
-                <View
-                  style={{
-                    height: 5,
-                    width: `${getPasswordStrength(values.password).score}%`,
-                    backgroundColor: getPasswordStrength(values.password).color,
+                <InputField
+                  icon="mail-outline"
+                  placeholder="Email"
+                  keyboardType="email-address"
+                  value={values.email}
+                  onChangeText={(text) => {
+                    handleChange("email")(text);
+                    setFieldTouched("email", true, false);
                   }}
                 />
-              </View>
-              <Text
-                style={{
-                  color: getPasswordStrength(values.password).color,
-                  marginTop: 4,
-                }}
-              >
-                {getPasswordStrength(values.password).label}
-              </Text>
-            </View>
-          )}
+                {touched.email && errors.email && (
+                  <Text style={styles.errorText}>{errors.email}</Text>
+                )}
 
-          {!isLogin && (
-            <>
-              <PhoneInputField
-                value={values.contactNumber}
-                isValid={!errors.contactNumber}
-                error={touched.contactNumber ? errors.contactNumber : ""}
-                onBlur={() => setFieldTouched("contactNumber")}
-                onChangeText={(text) => {
-                  const formatted = new AsYouType().input(text);
-                  handleChange("contactNumber")(formatted);
-                }}
-              />
-              {touched.contactNumber && errors.contactNumber && (
-                <Text style={styles.errorText}>{errors.contactNumber}</Text>
-              )}
-            </>
-          )}
+                <InputField
+                  icon="lock-closed-outline"
+                  placeholder="Password"
+                  secureTextEntry
+                  isPassword
+                  value={values.password}
+                  onChangeText={(text) => {
+                    handleChange("password")(text);
+                    setFieldTouched("password", true, false);
+                  }}
+                />
+                {touched.password && errors.password && (
+                  <Text style={styles.errorText}>{errors.password}</Text>
+                )}
 
-          {/* OTP Section */}
-          {!isLogin && values.email && (
-            <View>
-              <TouchableOpacity
-                style={{
-                  ...styles.button,
-                  backgroundColor: otpSent ? "#aaa" : "#007bff",
-                  marginTop: 10,
-                  marginBottom: 10,
-                }}
-                disabled={otpSent || loading}
-                onPress={async () => {
-                  if (!values.email.includes("@")) {
-                    setMessage("Enter a valid email address");
-                    return;
-                  }
+                {!isLogin && values.password !== "" && (
+                  <View style={{ marginBottom: 10 }}>
+                    <View
+                      style={{
+                        height: 5,
+                        width: "100%",
+                        backgroundColor: "#ddd",
+                        borderRadius: 5,
+                      }}
+                    >
+                      <View
+                        style={{
+                          height: 5,
+                          width: `${
+                            getPasswordStrength(values.password).score
+                          }%`,
+                          backgroundColor: getPasswordStrength(values.password)
+                            .color,
+                        }}
+                      />
+                    </View>
+                    <Text
+                      style={{
+                        color: getPasswordStrength(values.password).color,
+                        marginTop: 4,
+                      }}
+                    >
+                      {getPasswordStrength(values.password).label}
+                    </Text>
+                  </View>
+                )}
 
-                  try {
-                    setLoading(true);
-                    await axios.post(
-                      "http://localhost:3001/api/verify/send-otp",
-                      {
-                        email: values.email,
-                      }
-                    );
-                    setOtpSent(true);
-                    setMessage("OTP sent to your email");
-                  } catch (err) {
-                    setMessage("Failed to send OTP");
-                  } finally {
-                    setLoading(false);
-                  }
-                }}
-              >
-                <Text style={styles.buttonText}>
-                  {otpSent ? "OTP Sent" : "Send OTP"}
-                </Text>
-              </TouchableOpacity>
+                {!isLogin && (
+                  <>
+                    <PhoneInputField
+                      value={values.contactNumber}
+                      isValid={!errors.contactNumber}
+                      error={touched.contactNumber ? errors.contactNumber : ""}
+                      onBlur={() => setFieldTouched("contactNumber")}
+                      onChangeText={(text) => {
+                        const formatted = new AsYouType().input(text);
+                        handleChange("contactNumber")(formatted);
+                      }}
+                    />
+                    {touched.contactNumber && errors.contactNumber && (
+                      <Text style={styles.errorText}>
+                        {errors.contactNumber}
+                      </Text>
+                    )}
+                  </>
+                )}
 
-              {otpSent && !emailVerified && (
-                <>
-                  <InputField
-                    icon="key-outline"
-                    placeholder="Enter OTP"
-                    keyboardType="number-pad"
-                    value={otp}
-                    onChangeText={(text) => setOtp(text)}
-                  />
+                {!isLogin && values.email && (
+                  <View>
+                    <TouchableOpacity
+                      style={{
+                        ...styles.button,
+                        backgroundColor: "#007bff",
+                        marginTop: 10,
+                        marginBottom: 10,
+                      }}
+                      onPress={async () => {
+                        if (!values.email.includes("@")) {
+                          setMessage("Enter a valid email address");
+                          return;
+                        }
+
+                        try {
+                          setLoading(true);
+                          await axios.post(
+                            `${API_BASE_URL}/api/verify/send-otp`,
+                            { email: values.email }
+                          );
+
+                          setMessage("OTP sent to your email");
+                          router.push({
+                            pathname: "/otp-verification",
+                            params: { user: JSON.stringify(values) },
+                          });
+                        } catch (err) {
+                          console.log(err);
+                          setMessage("Failed to send OTP");
+                        } finally {
+                          setLoading(false);
+                        }
+                      }}
+                    >
+                      <Text style={styles.buttonText}>Send OTP</Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
+
+                {isLogin && (
                   <TouchableOpacity
-                    style={{ ...styles.button, backgroundColor: "#28a745" }}
-                    onPress={async () => {
-                      try {
-                        const res = await axios.post(
-                          "http://localhost:3001/api/verify/verify-otp",
-                          {
-                            email: values.email,
-                            otp,
-                          }
-                        );
-                        setEmailVerified(true);
-                        setMessage("Email verified ✅");
-                      } catch (err) {
-                        setOtpError("Invalid or expired OTP");
-                      }
-                    }}
+                    style={styles.button}
+                    onPress={() => handleSubmit()}
+                    disabled={!isLogin && loading}
                   >
-                    <Text style={styles.buttonText}>Verify OTP</Text>
+                    <Text style={styles.buttonText}>
+                      Log In to Your Account
+                    </Text>
                   </TouchableOpacity>
-                  {otpError !== "" && (
-                    <Text style={styles.errorText}>{otpError}</Text>
-                  )}
-                </>
-              )}
-            </View>
-          )}
+                )}
 
-          <TouchableOpacity
-            style={{
-              ...styles.button,
-              backgroundColor:
-                !isLogin && !emailVerified
-                  ? "#ccc"
-                  : styles.button.backgroundColor,
-            }}
-            onPress={() => handleSubmit()}
-            disabled={!isLogin && !emailVerified}
-          >
-            {loading ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text style={styles.buttonText}>
-                {isLogin ? "Log In to Your Account" : "Create Account"}
-              </Text>
+                <ToggleAuthLink
+                  isLogin={isLogin}
+                  toggle={() => {
+                    setIsLogin(!isLogin);
+                    setMessage("");
+                  }}
+                />
+                <Text style={styles.title}>OR</Text>
+
+                <GoogleSignInButton />
+                <MessageBox message={message} />
+              </>
             )}
-          </TouchableOpacity>
-
-          <ToggleAuthLink
-            isLogin={isLogin}
-            toggle={() => {
-              setIsLogin(!isLogin);
-              setEmailVerified(false);
-              setOtpSent(false);
-              setOtp("");
-              setOtpError("");
-              setMessage("");
-            }}
-          />
-          <Text style={styles.title}>OR</Text>
-
-          <GoogleSignInButton />
-          <MessageBox message={message} />
-        </>
-      )}
-    </Formik>
+          </Formik>
+        </ScrollView>
+      </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
   );
-}
+};
+
+export default AuthForm;
