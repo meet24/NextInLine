@@ -5,9 +5,6 @@ export const authStyles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#293443",
-    paddingHorizontal: 20,
-    paddingTop: 40,
-    paddingBottom: 40,
     justifyContent: "space-between",
   },
   logo: {
@@ -85,7 +82,7 @@ export const authStyles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginTop: 20,
-    marginBottom:10,
+    marginBottom: 10,
   },
   googleButtonText: {
     color: "#000",
@@ -93,12 +90,12 @@ export const authStyles = StyleSheet.create({
     fontSize: 16,
   },
   errorText: {
-  color: "brown",
-  fontSize: 12,
-  marginTop: 4,
-  marginLeft: 10,
-},
-screenContainer: {
+    color: "brown",
+    fontSize: 12,
+    marginTop: 4,
+    marginLeft: 10,
+  },
+  screenContainer: {
     flex: 1,
     backgroundColor: "#293443",
     paddingHorizontal: 20,
@@ -117,5 +114,4 @@ screenContainer: {
     marginBottom: 20,
     alignItems: "center",
   },
-
 });
