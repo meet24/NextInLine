@@ -10,16 +10,18 @@ import {
 import { useLocalSearchParams, useRouter } from "expo-router";
 import axios from "axios";
 import { registerUser } from "../src/api";
+import { useAuth } from "../src/AuthContext";
 
 type initialValues = {
-  name: "";
-  email: "";
-  password: "";
-  contactNumber: "";
+  name?: string;
+  email?: string;
+  password?: string;
+  contactNumber?: string;
 };
 
 export default function OTPVerificationScreen() {
-  const { user: userParam } = useLocalSearchParams();
+  const { login } = useAuth();
+  const { user: userParam, path } = useLocalSearchParams();
   const user = JSON.parse(userParam as string) as initialValues;
 
   const router = useRouter();
@@ -43,10 +45,31 @@ export default function OTPVerificationScreen() {
     }
 
     try {
-      await registerUser(user);
-      router.replace("/home" as any); // go back to login or home
-    } catch (err) {
-      console.log(err);
+      await axios.post(
+        `${process.env.EXPO_PUBLIC_FRONTEND_URL}:3001/api/verify-otp`,
+        {
+          email: user.email,
+          otp: code,
+        }
+      );
+      console.log(path);
+      if (path === "Register") {
+        await registerUser(user);
+        login();
+        router.replace("/");
+      } else if (path === "Forgot") {
+        router.replace({
+          pathname: "/resetPassword" as any,
+          params: { email: user.email },
+        });
+      }
+    } catch (err: any) {
+      const msg =
+        err?.response?.data?.msg ||
+        err?.message ||
+        "OTP verification or registration failed.";
+      Alert.alert("Error", msg);
+      console.log("OTP/Registration Error:", err);
     }
   };
 

@@ -11,7 +11,7 @@ export default function EmailInput({
 }) {
   const handleSendOtp = async () => {
     try {
-      await axios.post("http://loclahost:3001/api/verify/send-otp", { email });
+      await axios.post("http://loclahost:3001/api/send-otp", { email });
       Alert.alert("OTP Sent", `OTP sent to ${email}`);
       onSent();
     } catch (err: any) {
