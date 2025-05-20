@@ -26,10 +26,11 @@ import Header from "./Header";
 import ToggleAuthLink from "./ToggleAuthLink";
 import GoogleSignInButton from "./GoogleSignInButton";
 import MessageBox from "./MessageBox";
+import { useAuth } from "../src/AuthContext";
 
 const AuthForm: React.FC = () => {
+  const { login } = useAuth();
   const router = useRouter();
-
   const [isLogin, setIsLogin] = useState(true);
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
@@ -67,9 +68,12 @@ const AuthForm: React.FC = () => {
         email: values.email,
         password: values.password,
       });
-      router.replace("/home" as any);
+
+      // ✅ Notify parent component to switch to TabNavigator
+      login();
     } catch (err: any) {
-      setMessage(err?.response?.data?.msg || "Error occurred");
+      console.log("Login error:", err?.response?.data || err.message || err);
+      setMessage(err?.response?.data?.msg || err.message || "Unknown error");
     }
   };
 
@@ -221,14 +225,17 @@ const AuthForm: React.FC = () => {
                         try {
                           setLoading(true);
                           await axios.post(
-                            `${process.env.EXPO_PUBLIC_FRONTEND_URL}:3001/api/verify/send-otp`,
-                            { email: values.email }
+                            `${process.env.EXPO_PUBLIC_FRONTEND_URL}:3001/api/send-otp`,
+                            { email: values.email, type: "register" }
                           );
 
                           setMessage("OTP sent to your email");
                           router.push({
                             pathname: "/otp-verification",
-                            params: { user: JSON.stringify(values) },
+                            params: {
+                              user: JSON.stringify(values),
+                              path: "Register",
+                            },
                           });
                         } catch (err) {
                           console.log(err);
@@ -262,6 +269,16 @@ const AuthForm: React.FC = () => {
                     setMessage("");
                   }}
                 />
+                <TouchableOpacity
+                  onPress={() => {
+                    router.push("/forgotPassword");
+                  }}
+                  hitSlop={{ top: 5, bottom: 5, left: 10, right: 10 }}
+                >
+                  <Text style={styles.link}>
+                    {isLogin && "Forgot Password"}
+                  </Text>
+                </TouchableOpacity>
                 <Text style={styles.title}>OR</Text>
 
                 <GoogleSignInButton />

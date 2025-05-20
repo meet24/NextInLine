@@ -5,10 +5,24 @@ const bcrypt = require("bcryptjs");
 
 // 1️⃣ Send OTP to email for reset
 exports.sendResetOtp = async (req, res) => {
-  const { email } = req.body;
-  const user = await User.findOne({ email });
-  if (!user) return res.status(404).json({ msg: "User not found" });
+  const { email, type } = req.body;
 
+  if (!email || !type) {
+    return res.status(400).json({ msg: "Email and type are required" });
+  }
+
+  const user = await User.findOne({ email });
+
+  // 💡 Conditional logic based on flow type
+  if (type === "register" && user) {
+    return res.status(409).json({ msg: "Email already registered" });
+  }
+
+  if (type === "forgot" && !user) {
+    return res.status(404).json({ msg: "User not found" });
+  }
+
+  // ✅ Generate OTP
   const otp = Math.floor(100000 + Math.random() * 900000).toString();
   const salt = await bcrypt.genSalt(10);
   const otpHash = await bcrypt.hash(otp, salt);
@@ -18,12 +32,12 @@ exports.sendResetOtp = async (req, res) => {
     {
       otpHash,
       verified: false,
-      expiresAt: new Date(Date.now() + 10 * 60 * 1000),
+      expiresAt: new Date(Date.now() + 10 * 60 * 1000), // 10 minutes expiry
     },
     { upsert: true, new: true }
   );
 
-  await sendEmailOTP(email, otp);
+  await sendEmailOTP(email, otp); // Reuse your email utility
   res.json({ msg: "OTP sent to email" });
 };
 
@@ -39,12 +53,8 @@ exports.verifyResetOtp = async (req, res) => {
     return res.status(400).json({ msg: "Invalid or expired OTP" });
   }
 
-  await Otp.findOneAndUpdate(
-    { email },
-    { verified: true },
-    { new: true }
-  );
-console.log("OTP verified for:", email);
+  await Otp.findOneAndUpdate({ email }, { verified: true }, { new: true });
+  console.log("OTP verified for:", email);
 
   res.json({ msg: "OTP verified" });
 };
@@ -76,7 +86,6 @@ exports.resetPassword = async (req, res) => {
 // const {sendEmailOTP} = require("../utils/mailer");
 // const bcrypt = require("bcryptjs");
 
-
 // // 1️⃣ Send OTP to email for reset
 // exports.sendResetOtp = async (req, res) => {
 //   const { email } = req.body;
@@ -88,9 +97,9 @@ exports.resetPassword = async (req, res) => {
 //   const otpHash = await bcrypt.hash(otp, salt);
 //   await Otp.findOneAndUpdate(
 //     { email },
-//     { 
+//     {
 //         otpHash,
-//         expiresAt: new Date(Date.now() + 10 * 60 * 1000) 
+//         expiresAt: new Date(Date.now() + 10 * 60 * 1000)
 //         },
 //     { upsert: true, new: true }
 //   );
@@ -115,7 +124,6 @@ exports.resetPassword = async (req, res) => {
 // };
 
 // // 3️⃣ Reset password
-
 
 // exports.resetPassword = async (req, res) => {
 //   const { email, newPassword } = req.body;

@@ -23,6 +23,22 @@ const userSchema = new mongoose.Schema(
     address: {
       type: String,
     },
+        communicationPreferences: {
+      emailNotifications: {
+        type: Boolean,
+        default: true,
+      },
+      smsNotifications: {
+        type: Boolean,
+        default: false,
+      },
+    },
+    favourites: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Salon", // or "Stylist", "Service"
+      },
+    ]
   },
   { timestamps: true }
 );
