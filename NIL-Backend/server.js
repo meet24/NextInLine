@@ -37,6 +37,9 @@ app.use(passport.session());
 app.use("/api/auth", require("./routes/authRoute"));
 app.use("/api", require("./routes/userRoute"));
 
+const salonRoutes = require("./routes/salonRoute");
+app.use("/api/salons", salonRoutes);
+
 
 
 // OTP email verification
