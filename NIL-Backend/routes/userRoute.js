@@ -26,12 +26,6 @@ router.post("/login", loginUser);
 router.get("/profile", protect, getProfile);
 router.put("/profile", protect, updateProfile);
 
-const {
-  sendResetOtp,
-  verifyResetOtp,
-  resetPassword,
-} = require("../controllers/forgotPasswordController");
-
 router.post("/send-otp", sendResetOtp);
 router.post("/verify-otp", verifyResetOtp);
 router.post("/reset", resetPassword);
