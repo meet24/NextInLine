@@ -20,9 +20,8 @@ const {
   resetPassword,
 } = require("../controllers/forgotPasswordController");
 
-router.post("/forgot/send-otp", sendResetOtp);
-router.post("/forgot/verify-otp", verifyResetOtp);
-router.post("/forgot/reset", resetPassword);
+router.post("/send-otp", sendResetOtp);
+router.post("/verify-otp", verifyResetOtp);
+router.post("/reset", resetPassword);
 
 module.exports = router;
-

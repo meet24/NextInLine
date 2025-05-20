@@ -13,7 +13,7 @@ export default function OtpInput({
 
   const handleVerify = async () => {
     try {
-      await axios.post("http://localhost:3001/api/verify/verify-otp", {
+      await axios.post("http://localhost:3001/api/verify-otp", {
         email,
         otp,
       });
