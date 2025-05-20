@@ -140,3 +140,39 @@ exports.deleteUser = async (req, res) => {
   await user.deleteOne();
   res.status(200).json({ message: "Account deleted" });
 };
+
+// Get all notifications
+exports.getNotifications = async (req, res) => {
+  const user = await User.findById(req.user._id).select("notifications");
+  if (!user) return res.status(404).json({ message: "User not found" });
+
+  res.status(200).json(user.notifications);
+};
+
+// Mark a notification as read
+exports.markNotificationAsRead = async (req, res) => {
+  const { notificationId } = req.params;
+
+  const user = await User.findById(req.user._id);
+  if (!user) return res.status(404).json({ message: "User not found" });
+
+  const notification = user.notifications.id(notificationId);
+  if (!notification) return res.status(404).json({ message: "Notification not found" });
+
+  notification.read = true;
+  await user.save();
+
+  res.status(200).json({ message: "Notification marked as read" });
+};
+
+// Optional helper to push a notification (can also be exported if needed globally)
+const addNotification = async (userId, type, message) => {
+  const user = await User.findById(userId);
+  if (!user) return;
+
+  user.notifications.push({ type, message });
+  await user.save();
+};
+
+// (Optional) Use this function anywhere else to add a notification
+exports.addNotification = addNotification;

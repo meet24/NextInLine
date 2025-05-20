@@ -9,6 +9,8 @@ const {
   updatePreferences,
   addFavourite,
   removeFavourite,
+  getNotifications,
+  markNotificationAsRead,
 } = require("../controllers/userController");
 
 const {
@@ -35,6 +37,15 @@ router.put("/preferences", protect, updatePreferences);
 router.post("/favourites", protect, addFavourite);
 router.delete("/favourites/:itemId", protect, removeFavourite);
 router.delete("/delete", protect, deleteUser);
+
+const { addNotification } = require("../controllers/userController");
+router.post("/notifications/add", protect, async (req, res) => {
+  const { type, message } = req.body;
+  await addNotification(req.user._id, type, message);
+  res.status(201).json({ message: "Notification added" });
+});
+router.get("/notifications", protect, getNotifications);
+router.put("/notifications/:notificationId/read", protect, markNotificationAsRead);
 
 module.exports = router;
 
