@@ -38,7 +38,28 @@ const userSchema = new mongoose.Schema(
         type: mongoose.Schema.Types.ObjectId,
         ref: "Salon", // or "Stylist", "Service"
       },
-    ]
+    ],
+    notifications: [
+    {
+      type: {
+        type: String,
+        enum: ["appointment", "promo", "system"],
+        required: true,
+      },
+      message: {
+        type: String,
+        required: true,
+      },
+      read: {
+        type: Boolean,
+        default: false,
+      },
+      createdAt: {
+        type: Date,
+        default: Date.now,
+      }
+    }
+    ],
   },
   { timestamps: true }
 );
