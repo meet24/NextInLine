@@ -79,3 +79,64 @@ exports.updateProfile = async (req, res) => {
     address: user.address,
   });
 };
+
+// NEW: GET FULL ACCOUNT
+exports.getAccountPage = async (req, res) => {
+  const user = await User.findById(req.user._id).select("-password");
+  if (!user) return res.status(404).json({ message: "User not found" });
+
+  res.status(200).json(user);
+};
+
+// NEW: UPDATE COMMUNICATION PREFERENCES
+exports.updatePreferences = async (req, res) => {
+  const { emailNotifications, smsNotifications } = req.body;
+
+  const user = await User.findById(req.user._id);
+  if (!user) return res.status(404).json({ message: "User not found" });
+
+  user.communicationPreferences = {
+    emailNotifications,
+    smsNotifications,
+  };
+
+  await user.save();
+  res.status(200).json({ message: "Preferences updated" });
+};
+
+// NEW: ADD TO FAVOURITES
+exports.addFavourite = async (req, res) => {
+  const { itemId } = req.body;
+
+  const user = await User.findById(req.user._id);
+  if (!user) return res.status(404).json({ message: "User not found" });
+
+  if (!user.favourites.includes(itemId)) {
+    user.favourites.push(itemId);
+    await user.save();
+  }
+
+  res.status(200).json({ message: "Added to favourites" });
+};
+
+// NEW: REMOVE FROM FAVOURITES
+exports.removeFavourite = async (req, res) => {
+  const { itemId } = req.params;
+
+  const user = await User.findById(req.user._id);
+  if (!user) return res.status(404).json({ message: "User not found" });
+
+  user.favourites = user.favourites.filter(id => id.toString() !== itemId);
+  await user.save();
+
+  res.status(200).json({ message: "Removed from favourites" });
+};
+
+// NEW: DELETE ACCOUNT
+exports.deleteUser = async (req, res) => {
+  const user = await User.findById(req.user._id);
+  if (!user) return res.status(404).json({ message: "User not found" });
+
+  await user.deleteOne();
+  res.status(200).json({ message: "Account deleted" });
+};
