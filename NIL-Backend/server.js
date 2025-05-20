@@ -38,5 +38,8 @@ app.use(passport.session());
 app.use("/api/auth", require("./routes/authRoute"));
 app.use("/api", require("./routes/userRoute"));
 
+
+const salonRoutes = require("./routes/salonRoute");
+app.use("/api/salons", salonRoutes);
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
