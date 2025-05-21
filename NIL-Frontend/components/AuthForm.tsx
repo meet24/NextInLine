@@ -27,6 +27,7 @@ import ToggleAuthLink from "./ToggleAuthLink";
 import GoogleSignInButton from "./GoogleSignInButton";
 import MessageBox from "./MessageBox";
 import { useAuth } from "../src/AuthContext";
+import { storeToken } from "../utils/tokenStorage";
 
 const AuthForm: React.FC = () => {
   const { login } = useAuth();
@@ -64,13 +65,14 @@ const AuthForm: React.FC = () => {
         return;
       }
 
-      await loginUser({
+      const response = await loginUser({
         email: values.email,
         password: values.password,
       });
+      const { user, token } = response.data;
+      await storeToken(token);
 
-      // ✅ Notify parent component to switch to TabNavigator
-      login();
+      login(user); // <-- Set user in context
     } catch (err: any) {
       console.log("Login error:", err?.response?.data || err.message || err);
       setMessage(err?.response?.data?.msg || err.message || "Unknown error");
